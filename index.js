@@ -104,3 +104,8 @@ const post = async (endpoint, opts) => {
     console.log(response)
 })()
 
+module.exports = {
+    get,
+    post
+}
+
