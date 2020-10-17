@@ -1,11 +1,11 @@
 {
-  "name": "courier",
-  "version": "1.0.0",
+  "name": "courier.mente",
+  "version": "1.0.1",
   "description": "lightweight http/https request library",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Clemente Gomez",
-  "license": "ISC"
+  "license": "MIT"
 }

@@ -1,7 +1,6 @@
 const http = require('http');
 const https = require('https');
 const { URL, URLSearchParams } = require('url');
-const { pipeline } = require('stream');
 const responstTypes = {
     'json': JSON.parse
 }
