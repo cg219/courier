@@ -1,6 +1,6 @@
 {
   "name": "courier.mente",
-  "version": "1.0.1",
+  "version": "1.0.11",
   "description": "lightweight http/https request library",
   "main": "index.js",
   "scripts": {

@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-npm install @kreativemente/courier
+npm install courier.mente
 ```
 
 ## Quick Usage
@@ -15,14 +15,14 @@ npm install @kreativemente/courier
 ### GET request
 
 ```jsx
-const { get } = require('@kreativemente/courier');
+const { get } = require('courier.mente');
 const response = await get('https://jsonplaceholder.typicode.com/users');
 ```
 
 ### POST request
 
 ```jsx
-const { post } = require('@kreativemente/courier');
+const { post } = require('courier.mente');
 const response = await post('https://jsonplaceholder.typicode.com/users', {
     body: {
         email: 'dev@imkreative.com',
@@ -35,7 +35,7 @@ const response = await post('https://jsonplaceholder.typicode.com/users', {
 ### OPTION request
 
 ```jsx
-const { option } = require('@kreativemente/courier');
+const { option } = require('courier.mente');
 const response = await option('https://jsonplaceholder.typicode.com/users/1', {
     method: 'PUT',
     body: {
@@ -51,7 +51,7 @@ const response = await option('https://jsonplaceholder.typicode.com/users/1', {
 ### Structure
 
 ```jsx
-const { get, post, option } = require('@kreativemente/courier');
+const { get, post, option } = require('courier.mente');
 const customopts = {
     method: 'DELETE', // Any RESTful method type
     body: { // Body payload
