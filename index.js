@@ -1,7 +1,7 @@
 const http = require('http');
 const https = require('https');
 const { URL, URLSearchParams } = require('url');
-const responstTypes = {
+const responseTypes = {
     'json': JSON.parse
 }
 
@@ -13,7 +13,8 @@ const get = async (endpoint, opts) => {
     const { params, responseType, ...options } = opts || {};
     const protocol = url.protocol === 'http:' ? http : https;
     const defaults = {
-        method: 'GET'
+        method: 'GET',
+        responseType: 'json'
     }
 
     if (options) options.method = 'GET';
@@ -33,10 +34,10 @@ const get = async (endpoint, opts) => {
         });
 
         const transformData = data => {
-            const transform = responstTypes[responseType];
+            const transform = responseTypes[responseType];
             if (transform) return resolve(transform(data));
 
-            return resolve(responstTypes['json'](data));
+            return resolve(data);
         }
 
         request.on('error', reject);
@@ -54,6 +55,7 @@ const post = async (endpoint, opts) => {
     const protocol = url.protocol === 'http:' ? http : https;
     const defaults = {
         method: 'POST',
+        responseType: 'json',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -80,10 +82,10 @@ const post = async (endpoint, opts) => {
         });
 
         const transformData = data => {
-            const transform = responstTypes[responseType];
+            const transform = responseTypes[responseType];
             if (transform) return resolve(transform(data));
 
-            return resolve(responstTypes['json'](data));
+            return resolve(data);
         }
 
         request.on('error', reject);
@@ -102,6 +104,7 @@ const option = async (endpoint, opts) => {
     const protocol = url.protocol === 'http:' ? http : https;
     const defaults = {
         method: 'PUT',
+        responseType: 'json',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -127,10 +130,10 @@ const option = async (endpoint, opts) => {
         });
 
         const transformData = data => {
-            const transform = responstTypes[responseType];
+            const transform = responseTypes[responseType];
             if (transform) return resolve(transform(data));
 
-            return resolve(responstTypes['json'](data));
+            return resolve(data);
         }
 
         request.on('error', reject);
