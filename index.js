@@ -5,54 +5,67 @@ const responseTypes = {
     'json': JSON.parse
 }
 
-const get = async (endpoint, opts) => {
+function transformData(resolve, type, data) {
+    const transform = responseTypes[type];
+    if (transform) return resolve(transform(data));
+
+    return resolve(data);
+}
+
+function getRequestCallback(opts, type, resolve, reject) {
+    return function callback(response) {
+        let buffer;
+
+        if (response.statusCode != 301 && response.statusCode != 302) {
+            response.on('data', data => buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data));
+            response.on('error', reject);
+            response.on('end', () => transformData(resolve, type, buffer.toString()));
+        }
+    }
+}
+
+function makeRequest(endpoint, opts, type, bodyData, resolve, reject) {
     const url = new URL(endpoint);
 
-    if (!['https:', 'http:'].includes(url.protocol.toLowerCase())) throw Error('Courier is only for http or https calls');
+    if (!['https:', 'http:'].includes(url.protocol.toLowerCase())) reject(Error('Courier is only for http or https calls'));
 
-    const { params, responseType, ...options } = opts || {};
     const protocol = url.protocol === 'http:' ? http : https;
+    const request = protocol.request(url, opts, getRequestCallback(opts, type, resolve, reject));
+
+    request.on('error', reject);
+    request.on('response', (response) => {
+        if (response.statusCode == 301 || response.statusCode == 302) {
+            request.destroy();
+            makeRequest(response.headers.location, opts, type, bodyData, resolve, reject);
+        }
+    })
+
+    if (bodyData) request.write(bodyData);
+    request.end();
+}
+
+const get = async (endpoint, opts) => {
+    const url = new URL(endpoint);
+    const { params, responseType, ...options } = opts || {};
     const defaults = {
         method: 'GET',
         responseType: 'json'
     }
 
     if (options) options.method = 'GET';
-    if (params) {
-        url.search = new URLSearchParams(params).toString();
-    }
+    if (params) url.search = new URLSearchParams(params).toString();
 
     const finalOptions = { ...defaults, ...options }
 
     return new Promise((resolve, reject) => {
-        const request = protocol.request(url, finalOptions, response => {
-            let buffer;
-
-            response.on('data', data => buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data));
-            response.on('error', reject);
-            response.on('end', () => transformData(buffer.toString()));
-        });
-
-        const transformData = data => {
-            const transform = responseTypes[responseType];
-            if (transform) return resolve(transform(data));
-
-            return resolve(data);
-        }
-
-        request.on('error', reject);
-        request.end();
+        makeRequest(url, finalOptions, responseType, null, resolve, reject);
     })
 }
 
 const post = async (endpoint, opts) => {
-    const url = new URL(endpoint);
-
-    if (!['https:', 'http:'].includes(url.protocol.toLowerCase())) throw Error('Courier is only for http or https calls');
-
     let bodyData;
+    const url = new URL(endpoint);
     const { body, params, responseType, ...options } = opts || {};
-    const protocol = url.protocol === 'http:' ? http : https;
     const defaults = {
         method: 'POST',
         responseType: 'json',
@@ -73,35 +86,14 @@ const post = async (endpoint, opts) => {
     const finalOptions = { ...defaults, ...options }
 
     return new Promise((resolve, reject) => {
-        const request = protocol.request(url, finalOptions, response => {
-            let buffer;
-
-            response.on('data', data => buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data));
-            response.on('error', reject);
-            response.on('end', () => transformData(buffer.toString()));
-        });
-
-        const transformData = data => {
-            const transform = responseTypes[responseType];
-            if (transform) return resolve(transform(data));
-
-            return resolve(data);
-        }
-
-        request.on('error', reject);
-        if (body) request.write(bodyData);
-        request.end();
+        makeRequest(url, finalOptions, responseType, bodyData, resolve, reject);
     })
 }
 
 const option = async (endpoint, opts) => {
-    const url = new URL(endpoint);
-
-    if (!['https:', 'http:'].includes(url.protocol.toLowerCase())) throw Error('Courier is only for http or https calls');
-
     let bodyData;
+    const url = new URL(endpoint);
     const { body, params, responseType, ...options } = opts || {};
-    const protocol = url.protocol === 'http:' ? http : https;
     const defaults = {
         method: 'PUT',
         responseType: 'json',
@@ -121,24 +113,7 @@ const option = async (endpoint, opts) => {
     const finalOptions = { ...defaults, ...options }
 
     return new Promise((resolve, reject) => {
-        const request = protocol.request(url, finalOptions, response => {
-            let buffer;
-
-            response.on('data', data => buffer = buffer ? Buffer.concat([buffer, data]) : Buffer.from(data));
-            response.on('error', reject);
-            response.on('end', () => transformData(buffer.toString()));
-        });
-
-        const transformData = data => {
-            const transform = responseTypes[responseType];
-            if (transform) return resolve(transform(data));
-
-            return resolve(data);
-        }
-
-        request.on('error', reject);
-        if (body) request.write(bodyData);
-        request.end();
+        makeRequest(url, finalOptions, responseType, bodyData, resolve, reject);
     })
 }
 
